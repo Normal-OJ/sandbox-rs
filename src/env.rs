@@ -2,7 +2,7 @@ use std::error::Error;
 use toml::{Table, Value};
 
 #[derive(Clone)]
-struct Env {
+pub struct Env {
     pub cwd: String,
     pub large_stack: bool,
     pub max_process: i32,
@@ -16,7 +16,7 @@ struct Env {
 }
 
 impl Env {
-    fn new(src_str: &str) -> Result<Self, Box<dyn Error>> {
+    pub fn new(src_str: &str) -> Result<Self, Box<dyn Error>> {
         let table = src_str.parse::<Table>()?;
 
         Ok(Self {
