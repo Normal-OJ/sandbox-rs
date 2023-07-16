@@ -2,9 +2,16 @@
 name = "noj-sandbox-rs"
 version = "0.1.0"
 edition = "2021"
+authors = ["aokblast aokblast@FreeBSD.org"]
+
+[lib]
+crate-type = ["dylib", "rlib"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 toml = "0.7.3"
 clap = {version = "4.3.12", features = ["derive"]}
+dlopen = "0.1.8"
+fork = "0.1.22"
+tempfile = "3.6.0"
+nix = "0.26.2"

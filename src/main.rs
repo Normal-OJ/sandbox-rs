@@ -1,15 +1,18 @@
-mod env;
-
 use std::fs;
 use std::path::Path;
 use clap::Parser;
-use env::Env;
+use noj_sandbox_rs::run;
+use noj_sandbox_rs::Env;
+use std::env;
+
 
 #[derive(Parser, Debug)]
 #[command(author, version, about)]
 struct Args {
     #[arg(short, long, default_value = "")]
-    file: String,
+    env_path: String,
+    #[arg(short, long, default_value = "")]
+    dl_path: String,
 }
 
 fn parse_env_from_file(file_path: &str) -> Env {
@@ -22,6 +25,6 @@ fn parse_env_from_file(file_path: &str) -> Env {
 
 fn main() {
     let args = Args::parse();
-
-    let environment = parse_env_from_file(&args.file);
+    let environment = parse_env_from_file(&args.env_path);
+    run(args.dl_path, environment)
 }
