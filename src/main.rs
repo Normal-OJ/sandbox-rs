@@ -1,9 +1,10 @@
 use std::fs;
 use std::path::Path;
-use clap::Parser;
-use noj_sandbox_rs::run;
-use noj_sandbox_rs::Env;
 
+use clap::Parser;
+
+use noj_sandbox_rs::Env;
+use noj_sandbox_rs::run;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about)]

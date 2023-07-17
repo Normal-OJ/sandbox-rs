@@ -1,4 +1,5 @@
 use std::error::Error;
+
 use toml::{Table, Value};
 
 #[derive(Clone)]
@@ -31,7 +32,7 @@ impl Env {
             stderr: table.get("stderr").ok_or("Stderr don't have default value").unwrap().as_str().ok_or("stderr should be String type")?.to_string(),
             stdin: table.get("stdin").ok_or("Stdin don't have default value").unwrap().as_str().ok_or("stdin should be String type")?.to_string(),
             stdout: table.get("stdout").ok_or("Stdout don't have default value").unwrap().as_str().ok_or("stdout should be String type")?.to_string(),
-            lang: table.get("lang").unwrap_or(&Value::from(0)).as_integer().ok_or("lang should be Integer type")? as u64
+            lang: table.get("lang").unwrap_or(&Value::from(0)).as_integer().ok_or("lang should be Integer type")? as u64,
         })
     }
 }
@@ -39,6 +40,7 @@ impl Env {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     #[test]
     fn test_correct() {
         let config_str = "

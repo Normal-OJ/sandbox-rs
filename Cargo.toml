@@ -7,7 +7,7 @@ authors = ["aokblast aokblast@FreeBSD.org"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
 toml = "0.7.3"
-clap = {version = "4.3.12", features = ["derive"]}
+clap = { version = "4.3.12", features = ["derive"] }
 dlopen = "0.1.8"
 fork = "0.1.22"
 tempfile = "3.6.0"

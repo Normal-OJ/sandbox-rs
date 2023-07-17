@@ -4,7 +4,7 @@ use std::ffi::CString;
 pub enum Lang {
     C,
     CPP,
-    PYTHON
+    PYTHON,
 }
 
 impl TryFrom<u64> for Lang {
@@ -32,8 +32,8 @@ impl Lang {
         match self {
             Self::C => {
                 vec![CString::new("gcc").unwrap(), CString::new("-DONLINE_JUDGE").unwrap(), CString::new("-O2").unwrap(), CString::new("-w").unwrap()
-                     ,CString::new("-fmax-errors=3").unwrap(), CString::new("-std=c11").unwrap(), CString::new("main.c").unwrap(), CString::new("-lm").unwrap(), CString::new("-o").unwrap()
-                     ,CString::new("main").unwrap()]
+                     , CString::new("-fmax-errors=3").unwrap(), CString::new("-std=c11").unwrap(), CString::new("main.c").unwrap(), CString::new("-lm").unwrap(), CString::new("-o").unwrap()
+                     , CString::new("main").unwrap()]
             }
             Self::CPP => {
                 vec![CString::new("g++").unwrap(), CString::new("-DONLINE_JUDGE").unwrap(), CString::new("-O2").unwrap()

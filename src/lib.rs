@@ -1,26 +1,27 @@
-mod env;
-mod context;
-mod lang;
-
-pub use env::Env;
-pub use lang::Lang;
 use std::{thread, time};
 use std::ffi::CStr;
 use std::fs::{File, Permissions};
-use std::os::unix::fs::PermissionsExt;
 use std::io::{BufWriter, Write};
 use std::os::fd::AsRawFd;
+use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 use std::sync::{Arc, Mutex};
-use context::Context;
+
 use fork::{daemon, Fork};
-use nix::libc::{rusage, wait4, timeval, WIFEXITED, WEXITSTATUS, WTERMSIG, strsignal, STDIN_FILENO, STDOUT_FILENO, STDERR_FILENO, execvp};
+use nix::libc::{execvp, rusage, STDERR_FILENO, STDIN_FILENO, STDOUT_FILENO, strsignal, timeval, wait4, WEXITSTATUS, WIFEXITED, WTERMSIG};
 use nix::sys::resource::Resource::{RLIMIT_AS, RLIMIT_CPU, RLIMIT_FSIZE, RLIMIT_NPROC};
 use nix::sys::resource::setrlimit;
 use nix::sys::signal;
 use nix::sys::signal::{Signal, SIGSEGV, SIGTERM, SIGXCPU, SIGXFSZ};
 use nix::unistd::{dup2, Pid};
 
+use context::Context;
+pub use env::Env;
+pub use lang::Lang;
+
+mod env;
+mod context;
+mod lang;
 
 trait Judger {
     fn do_before_run(&mut self, e: &mut Env);
@@ -43,9 +44,7 @@ impl Judger for DefaultJudger {
 }
 
 fn create_instance() -> impl Judger {
-    DefaultJudger {
-
-    }
+    DefaultJudger {}
 }
 
 fn run_inner(mut judger: impl Judger, mut env: Env) {
@@ -81,7 +80,7 @@ fn run_inner(mut judger: impl Judger, mut env: Env) {
 
         let mut stat = 0;
 
-        thread::spawn(move ||{
+        thread::spawn(move || {
             thread::sleep(time::Duration::from_millis(env.runtime_limit + 1000));
             signal::kill(Pid::from_raw(pid), SIGTERM).unwrap();
             let mut tle_flag = tle_flag_atomic_inner.lock().unwrap();
@@ -138,8 +137,8 @@ fn run_inner(mut judger: impl Judger, mut env: Env) {
         let lang = Lang::try_from(env.lang).unwrap();
         setrlimit(RLIMIT_AS, env.memory_limit * 1024, env.memory_limit * 1024 + 1024).unwrap();
         setrlimit(RLIMIT_FSIZE, env.output_size_limit, env.output_size_limit).unwrap();
-        setrlimit(RLIMIT_CPU, env.runtime_limit / 1000 + 1 + if env.runtime_limit % 1000 >= 800 {0} else {1}
-                  , env.runtime_limit / 1000 + 2 + if env.runtime_limit % 1000 >= 800 {0} else {1}).unwrap();
+        setrlimit(RLIMIT_CPU, env.runtime_limit / 1000 + 1 + if env.runtime_limit % 1000 >= 800 { 0 } else { 1 }
+                  , env.runtime_limit / 1000 + 2 + if env.runtime_limit % 1000 >= 800 { 0 } else { 1 }).unwrap();
         setrlimit(RLIMIT_NPROC, (env.max_process + 1) as nix::libc::rlim_t, (env.max_process + 1) as nix::libc::rlim_t).unwrap();
 
         {
