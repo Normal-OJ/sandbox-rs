@@ -6,7 +6,8 @@ pub use env::Env;
 pub use lang::Lang;
 use std::{thread, time};
 use std::ffi::CStr;
-use std::fs::File;
+use std::fs::{File, Permissions};
+use std::os::unix::fs::PermissionsExt;
 use std::io::{BufWriter, Write};
 use std::os::fd::AsRawFd;
 use std::path::Path;
@@ -17,7 +18,7 @@ use nix::libc::{rusage, wait4, timeval, WIFEXITED, WEXITSTATUS, WTERMSIG, strsig
 use nix::sys::resource::Resource::{RLIMIT_AS, RLIMIT_CPU, RLIMIT_FSIZE, RLIMIT_NPROC};
 use nix::sys::resource::setrlimit;
 use nix::sys::signal;
-use nix::sys::signal::{Signal, SIGSEGV, SIGXCPU, SIGXFSZ};
+use nix::sys::signal::{Signal, SIGSEGV, SIGTERM, SIGXCPU, SIGXFSZ};
 use nix::unistd::{dup2, Pid};
 
 
@@ -32,10 +33,10 @@ trait Judger {
 struct DefaultJudger;
 
 impl Judger for DefaultJudger {
-    fn do_before_run(&mut self, e: &mut Env) {}
-    fn do_in_run(&mut self, c: Context) {}
-    fn do_after_run(&mut self, e: &mut Env) {}
-    fn judge_result(&mut self, e: &mut Env) {}
+    fn do_before_run(&mut self, _e: &mut Env) {}
+    fn do_in_run(&mut self, _c: Context) {}
+    fn do_after_run(&mut self, _e: &mut Env) {}
+    fn judge_result(&mut self, _e: &mut Env) {}
     fn is_interactive(&self) -> bool {
         return false;
     }
@@ -52,9 +53,9 @@ fn run_inner(mut judger: impl Judger, mut env: Env) {
         //TODO: add interactive
     }
 
-    if let Ok(Fork::Parent(pid)) = daemon(false, false) {
+    if let Ok(Fork::Parent(pid)) = daemon(true, true) {
         judger.do_before_run(&mut env);
-        let mut writer = BufWriter::new(File::open(Path::new(&env.output_file)).unwrap());
+        let mut writer = BufWriter::new(File::options().write(true).open(Path::new(&env.output_file)).unwrap());
 
         let tle_flag_atomic = Arc::new(Mutex::new(false));
         let tle_flag_atomic_inner = Arc::clone(&tle_flag_atomic);
@@ -80,9 +81,9 @@ fn run_inner(mut judger: impl Judger, mut env: Env) {
 
         let mut stat = 0;
 
-        let thread = thread::spawn(move ||{
-            thread::sleep(time::Duration::from_millis(env.runtime_limit + 100));
-            signal::kill(Pid::from_raw(pid), Signal::SIGKILL).unwrap();
+        thread::spawn(move ||{
+            thread::sleep(time::Duration::from_millis(env.runtime_limit + 1000));
+            signal::kill(Pid::from_raw(pid), SIGTERM).unwrap();
             let mut tle_flag = tle_flag_atomic_inner.lock().unwrap();
             *tle_flag = true;
         });
@@ -96,10 +97,11 @@ fn run_inner(mut judger: impl Judger, mut env: Env) {
 
         let mut tle_flag = *tle_flag_atomic.lock().unwrap();
 
-        if WIFEXITED(stat) {
-            if tle_flag || (((usage.ru_utime.tv_sec * 1000000 + usage.ru_utime.tv_usec + 100) / 1000) as u64 > env.runtime_limit) {
+
+        if WIFEXITED(stat) || Signal::try_from(WTERMSIG(stat)).unwrap() == SIGTERM {
+            if tle_flag || (((usage.ru_utime.tv_sec * 1000000 + usage.ru_utime.tv_usec) / 1000) as u64 > env.runtime_limit + 2) {
                 write!(&mut writer, "TLE\nWEXITSTATUS() = {}\n", WEXITSTATUS(stat)).unwrap();
-            } else if usage.ru_maxrss as u64 > env.memory_limit {
+            } else if (usage.ru_maxrss * 1024) as u64 > env.memory_limit {
                 write!(&mut writer, "MLE\nWEXITSTATUS() = {}\n", WEXITSTATUS(stat)).unwrap()
             } else if WEXITSTATUS(stat) != 0 {
                 write!(&mut writer, "RE\nWIFEXITED - WEXITSTATUS() = {}\n", WEXITSTATUS(stat)).unwrap();
@@ -120,39 +122,44 @@ fn run_inner(mut judger: impl Judger, mut env: Env) {
                 SIGXFSZ => {
                     write!(&mut writer, "OLE\nWEXITSTATUS() = {}, WTERMSIG() = {} ({})\n", WEXITSTATUS(stat), sig, sig_str).unwrap();
                 }
-                SIGSEGV => {
-                    write!(&mut writer, "MLE\nWEXITSTATUS() = {}, WTERMSIG() = {} ({})\n", WEXITSTATUS(stat), sig, sig_str).unwrap();
-                }
                 _ => {
                     write!(&mut writer, "RE\nWEXITSTATUS() = {}, WTERMSIG() = {} ({})\n", WEXITSTATUS(stat), sig, sig_str).unwrap();
                 }
             }
         }
         if tle_flag {
-            write!(&mut writer, "%{}\n", env.runtime_limit + 100).unwrap();
+            write!(&mut writer, "{}\n", env.runtime_limit + 100).unwrap();
         } else {
-            write!(&mut writer, "%{}\n", (usage.ru_utime.tv_sec * 1000000 + usage.ru_utime.tv_usec) / 1000).unwrap();
-            write!(&mut writer, "%{}\n", usage.ru_maxrss).unwrap();
+            write!(&mut writer, "{}\n", (usage.ru_utime.tv_sec * 1000000 + usage.ru_utime.tv_usec) / 1000).unwrap();
+            write!(&mut writer, "{}\n", usage.ru_maxrss).unwrap();
         }
         judger.do_after_run(&mut env);
     } else {
         let lang = Lang::try_from(env.lang).unwrap();
-        setrlimit(RLIMIT_AS, env.memory_limit * 1024 * 2, env.memory_limit * 1024 * 2 + 1024).unwrap();
+        setrlimit(RLIMIT_AS, env.memory_limit * 1024, env.memory_limit * 1024 + 1024).unwrap();
         setrlimit(RLIMIT_FSIZE, env.output_size_limit, env.output_size_limit).unwrap();
         setrlimit(RLIMIT_CPU, env.runtime_limit / 1000 + 1 + if env.runtime_limit % 1000 >= 800 {0} else {1}
                   , env.runtime_limit / 1000 + 2 + if env.runtime_limit % 1000 >= 800 {0} else {1}).unwrap();
         setrlimit(RLIMIT_NPROC, (env.max_process + 1) as nix::libc::rlim_t, (env.max_process + 1) as nix::libc::rlim_t).unwrap();
 
-        let input = File::open(Path::new(&env.stdin)).unwrap();
-        dup2(input.as_raw_fd(), STDIN_FILENO).unwrap();
-        let output = File::open(Path::new(&env.stdout)).unwrap();
-        dup2(output.as_raw_fd(), STDOUT_FILENO).unwrap();
-        let err = File::open(Path::new(&env.stderr)).unwrap();
-        dup2(err.as_raw_fd(), STDERR_FILENO).unwrap();
+        {
+            let input = File::options().read(true).open(Path::new(&env.stdin)).unwrap();
+            dup2(input.as_raw_fd(), STDIN_FILENO).unwrap();
+        }
+        {
+            let output = File::options().write(true).create(true).open(Path::new(&env.stdout)).unwrap();
+            output.set_permissions(Permissions::from_mode(0o644)).unwrap();
+            dup2(output.as_raw_fd(), STDOUT_FILENO).unwrap();
+        }
+        {
+            let err = File::options().write(true).create(true).open(Path::new(&env.stderr)).unwrap();
+            err.set_permissions(Permissions::from_mode(0o644)).unwrap();
+            dup2(err.as_raw_fd(), STDERR_FILENO).unwrap();
+        }
 
         unsafe {
-            execvp(lang.get_execute_argv()[0].as_ptr() as *const i8,
-                   lang.get_execute_argv().iter().map(|m| { m.as_ptr() as *const i8 }).collect::<Vec<*const i8>>().as_ptr());
+            execvp(lang.get_execute_argv()[0].as_ptr(),
+                   lang.get_execute_argv().iter().map(|m| { m.as_ptr() }).collect::<Vec<_>>().as_ptr());
         }
     }
 }

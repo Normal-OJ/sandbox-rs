@@ -65,7 +65,7 @@ mod tests {
         assert_eq!(config.stderr, "path/to/stderr");
         assert_eq!(config.stdin, "path/to/stdin");
         assert_eq!(config.stdout, "path/to/stdout");
-        assert_eq!(config.lang, "1");
+        assert_eq!(config.lang, 1);
     }
 
     #[test]

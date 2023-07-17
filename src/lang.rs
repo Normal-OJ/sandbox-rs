@@ -1,3 +1,5 @@
+use std::ffi::CString;
+
 #[derive(Copy, Clone)]
 pub enum Lang {
     C,
@@ -26,13 +28,17 @@ impl TryFrom<u64> for Lang {
 }
 
 impl Lang {
-    pub fn get_compile_argv(self) -> Vec<&'static str> {
+    pub fn get_compile_argv(self) -> Vec<CString> {
         match self {
             Self::C => {
-                vec!["gcc", "-DONLINE_JUDGE", "-O2" ,"-w" ,"-fmax-errors=3", "-std=c11" ,"main.c", "-lm", "-o" ,"main"]
+                vec![CString::new("gcc").unwrap(), CString::new("-DONLINE_JUDGE").unwrap(), CString::new("-O2").unwrap(), CString::new("-w").unwrap()
+                     ,CString::new("-fmax-errors=3").unwrap(), CString::new("-std=c11").unwrap(), CString::new("main.c").unwrap(), CString::new("-lm").unwrap(), CString::new("-o").unwrap()
+                     ,CString::new("main").unwrap()]
             }
             Self::CPP => {
-                vec!["g++", "-DONLINE_JUDGE", "-O2", "-w", "-fmax-errors=3", "-std=c++17", "main.cpp", "-lm", "-o", "main"]
+                vec![CString::new("g++").unwrap(), CString::new("-DONLINE_JUDGE").unwrap(), CString::new("-O2").unwrap()
+                     , CString::new("-w").unwrap(), CString::new("-fmax-errors=3").unwrap(), CString::new("-std=c++17").unwrap(), CString::new("main.cpp").unwrap()
+                     , CString::new("-lm").unwrap(), CString::new("-o").unwrap(), CString::new("main").unwrap()]
             }
             Self::PYTHON => {
                 vec![]
@@ -40,16 +46,16 @@ impl Lang {
         }
     }
 
-    pub fn get_execute_argv(self) -> Vec<&'static str> {
+    pub fn get_execute_argv(self) -> Vec<CString> {
         match self {
             Self::C => {
-                vec!["./main"]
+                vec![CString::new("../main").unwrap()]
             }
             Self::CPP => {
-                vec!["./main"]
+                vec![CString::new("../main").unwrap()]
             }
             Self::PYTHON => {
-                vec!["/usr/bin/python3", "main.py"]
+                vec![CString::new("../main").unwrap(), CString::new("../main").unwrap()]
             }
         }
     }
