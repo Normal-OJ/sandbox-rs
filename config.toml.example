@@ -1,0 +1,11 @@
+cwd = './' # The working directory of spawned process
+large-stack = true # Enable large stack
+max-process = 1 # Process limit
+memory-limit = 5120000 # Memory usage limit in Byte
+output = './output' # The path to output sandbox result
+output-size-limit = 10000 # Output size limit in bytes
+runtime-limit = 1000 # Runtime limit in millisecond
+stderr = './stderr' # The stderr path of the spawned process
+stdin = './stdin' # The stdin path of the spawned process
+stdout = './stdout' # The stdout path of the spawned process
+lang = 1 # THe Language we used
