@@ -49,13 +49,13 @@ impl Lang {
     pub fn get_execute_argv(self) -> Vec<CString> {
         match self {
             Self::C => {
-                vec![CString::new("../main").unwrap()]
+                vec![CString::new("./main").unwrap()]
             }
             Self::CPP => {
-                vec![CString::new("../main").unwrap()]
+                vec![CString::new("./main").unwrap()]
             }
             Self::PYTHON => {
-                vec![CString::new("../main").unwrap(), CString::new("../main").unwrap()]
+                vec![CString::new("/usr/bin/python3").unwrap(), CString::new("main.py").unwrap()]
             }
         }
     }
