@@ -1,4 +1,4 @@
-use std::ffi::CString;
+use std::ffi::{CStr, CString};
 
 #[derive(Copy, Clone)]
 pub enum Lang {
@@ -27,18 +27,19 @@ impl TryFrom<u64> for Lang {
     }
 }
 
+fn rust_string_vec_to_c_string_vec(vec: Vec<&'static str>) -> Vec<CString>{
+    vec.iter().map(|e| CString::new(*e).unwrap()).collect()
+}
+
+
 impl Lang {
     pub fn get_compile_argv(self) -> Vec<CString> {
         match self {
             Self::C => {
-                vec![CString::new("gcc").unwrap(), CString::new("-DONLINE_JUDGE").unwrap(), CString::new("-O2").unwrap(), CString::new("-w").unwrap()
-                     , CString::new("-fmax-errors=3").unwrap(), CString::new("-std=c11").unwrap(), CString::new("main.c").unwrap(), CString::new("-lm").unwrap(), CString::new("-o").unwrap()
-                     , CString::new("main").unwrap()]
+                rust_string_vec_to_c_string_vec(vec!["gcc", "-DONLINE_JUDGE", "-O2", "-w", "-fmax-errors=3", "-std=c11", "main.c", "-lm", "-o", "main"])
             }
             Self::CPP => {
-                vec![CString::new("g++").unwrap(), CString::new("-DONLINE_JUDGE").unwrap(), CString::new("-O2").unwrap()
-                     , CString::new("-w").unwrap(), CString::new("-fmax-errors=3").unwrap(), CString::new("-std=c++17").unwrap(), CString::new("main.cpp").unwrap()
-                     , CString::new("-lm").unwrap(), CString::new("-o").unwrap(), CString::new("main").unwrap()]
+                rust_string_vec_to_c_string_vec(vec!["g++", "-DONLINE_JUDGE", "-O2", "-w", "-fmax-errors=3", "-std=c++17", "main.cpp", "-lm", "-o", "main"])
             }
             Self::PYTHON => {
                 vec![]
@@ -49,13 +50,13 @@ impl Lang {
     pub fn get_execute_argv(self) -> Vec<CString> {
         match self {
             Self::C => {
-                vec![CString::new("./main").unwrap()]
+                rust_string_vec_to_c_string_vec(vec!["./main"])
             }
             Self::CPP => {
-                vec![CString::new("./main").unwrap()]
+                rust_string_vec_to_c_string_vec(vec!["./main"])
             }
             Self::PYTHON => {
-                vec![CString::new("/usr/bin/python3").unwrap(), CString::new("main.py").unwrap()]
+                rust_string_vec_to_c_string_vec(vec!["/usr/bin/python3", "main.py"])
             }
         }
     }
