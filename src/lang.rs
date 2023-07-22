@@ -1,4 +1,4 @@
-use std::ffi::{CStr, CString};
+use std::ffi::{CString};
 
 #[derive(Copy, Clone)]
 pub enum Lang {
