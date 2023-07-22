@@ -12,7 +12,7 @@ use nix::libc::{execvp, rusage, STDERR_FILENO, STDIN_FILENO, STDOUT_FILENO, strs
 use nix::sys::resource::Resource::{RLIMIT_AS, RLIMIT_CPU, RLIMIT_FSIZE, RLIMIT_NPROC};
 use nix::sys::resource::setrlimit;
 use nix::sys::signal;
-use nix::sys::signal::{Signal, SIGSEGV, SIGTERM, SIGXCPU, SIGXFSZ};
+use nix::sys::signal::{Signal, SIGTERM, SIGXCPU, SIGXFSZ};
 use nix::unistd::{dup2, Pid};
 
 use context::Context;
@@ -95,7 +95,6 @@ fn run_inner(mut judger: impl Judger, mut env: Env) {
         };
 
         let mut tle_flag = *tle_flag_atomic.lock().unwrap();
-
 
         if WIFEXITED(stat) || Signal::try_from(WTERMSIG(stat)).unwrap() == SIGTERM {
             if tle_flag || (((usage.ru_utime.tv_sec * 1000000 + usage.ru_utime.tv_usec) / 1000) as u64 > env.runtime_limit + 2) {
