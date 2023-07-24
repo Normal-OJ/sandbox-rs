@@ -76,6 +76,8 @@ fn run_inner(mut judger: impl Judger, mut env: Env) {
             ru_nsignals: 0,
             ru_nvcsw: 0,
             ru_nivcsw: 0,
+            #[cfg(any(target_env = "musl", target_env = "ohos", target_os = "emscripten"))]
+            __reserved: [c_long; 16],
         };
 
         let mut stat = 0;
