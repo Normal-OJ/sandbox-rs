@@ -1,5 +1,5 @@
 [package]
-name = "noj-sandbox-rs"
+name = "noj-sandbox"
 version = "0.1.0"
 edition = "2021"
 authors = ["aokblast aokblast@FreeBSD.org"]
@@ -8,15 +8,20 @@ authors = ["aokblast aokblast@FreeBSD.org"]
 [dependencies]
 toml = "0.7.3"
 clap = { version = "4.3.12", features = ["derive"] }
-dlopen = "0.1.8"
+vplugin = "0.3.0"
 fork = "0.1.22"
 tempfile = "3.6.0"
 nix = "0.26.2"
 
 [[bin]]
-name = "noj_sandbox_rs"
+name = "noj_sandbox"
 path = "src/main.rs"
 
 [lib]
-name = "libnoj_rs"
+name = "libnoj"
 path = "src/lib/lib.rs"
+
+[workspace]
+members = [
+    "src/plugin/interpreter_judger",
+]

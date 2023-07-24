@@ -1,4 +1,4 @@
-use std::ffi::{CString};
+use std::ffi::CString;
 
 #[derive(Copy, Clone)]
 pub enum Lang {
@@ -27,7 +27,7 @@ impl TryFrom<u64> for Lang {
     }
 }
 
-fn rust_string_vec_to_c_string_vec(vec: Vec<&'static str>) -> Vec<CString>{
+fn rust_string_vec_to_c_string_vec(vec: Vec<&'static str>) -> Vec<CString> {
     vec.iter().map(|e| CString::new(*e).unwrap()).collect()
 }
 
