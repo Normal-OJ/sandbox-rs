@@ -8,11 +8,13 @@ use std::path::Path;
 use std::sync::{Arc, Mutex};
 
 use fork::{daemon, Fork};
-use nix::libc::{execvp, rusage, STDERR_FILENO, STDIN_FILENO, STDOUT_FILENO, strsignal, timeval, wait4, WEXITSTATUS, WIFEXITED, WTERMSIG};
+use nix::libc::{execvp, STDERR_FILENO, STDIN_FILENO, STDOUT_FILENO, strsignal, waitpid, WEXITSTATUS, WIFEXITED, WTERMSIG};
 use nix::sys::resource::Resource::{RLIMIT_AS, RLIMIT_CPU, RLIMIT_FSIZE, RLIMIT_NPROC};
-use nix::sys::resource::setrlimit;
+use nix::sys::resource::{getrusage, setrlimit};
+use nix::sys::resource::UsageWho::RUSAGE_CHILDREN;
 use nix::sys::signal;
 use nix::sys::signal::{Signal, SIGTERM, SIGXCPU, SIGXFSZ};
+use nix::sys::time::TimeValLike;
 use nix::unistd::{dup2, Pid};
 
 use libnoj_rs::Judger;
@@ -48,26 +50,7 @@ fn run_inner(mut judger: impl Judger, mut env: Env) {
         let tle_flag_atomic = Arc::new(Mutex::new(false));
         let tle_flag_atomic_inner = Arc::clone(&tle_flag_atomic);
 
-        let mut usage = rusage {
-            ru_utime: timeval { tv_sec: 0, tv_usec: 0 },
-            ru_stime: timeval { tv_sec: 0, tv_usec: 0 },
-            ru_maxrss: 0,
-            ru_ixrss: 0,
-            ru_idrss: 0,
-            ru_isrss: 0,
-            ru_minflt: 0,
-            ru_majflt: 0,
-            ru_nswap: 0,
-            ru_inblock: 0,
-            ru_oublock: 0,
-            ru_msgsnd: 0,
-            ru_msgrcv: 0,
-            ru_nsignals: 0,
-            ru_nvcsw: 0,
-            ru_nivcsw: 0,
-            #[cfg(any(target_env = "musl", target_env = "ohos", target_os = "emscripten"))]
-            __reserved: [0; 16],
-        };
+
 
         let mut stat = 0;
 
@@ -78,19 +61,22 @@ fn run_inner(mut judger: impl Judger, mut env: Env) {
             *tle_flag = true;
         });
 
+
         unsafe {
-            if wait4(pid, &mut stat, 0, &mut usage) == -1 {
+            if waitpid(pid, &mut stat, 0) == -1 {
                 write!(&mut writer, "RE\nwait4() = -1\n0\n0\n").unwrap();
                 return;
             }
         };
 
+        let usage = getrusage(RUSAGE_CHILDREN).unwrap();
+
         let mut tle_flag = *tle_flag_atomic.lock().unwrap();
 
         if WIFEXITED(stat) || Signal::try_from(WTERMSIG(stat)).unwrap() == SIGTERM {
-            if tle_flag || (((usage.ru_utime.tv_sec * 1000000 + usage.ru_utime.tv_usec) / 1000) as u64 > env.runtime_limit + 2) {
+            if tle_flag || usage.user_time().num_milliseconds() > (env.runtime_limit + 2) as i64 {
                 write!(&mut writer, "TLE\nWEXITSTATUS() = {}\n", WEXITSTATUS(stat)).unwrap();
-            } else if (usage.ru_maxrss * 1024) as u64 > env.memory_limit {
+            } else if (usage.max_rss() * 1024) as u64 > env.memory_limit {
                 write!(&mut writer, "MLE\nWEXITSTATUS() = {}\n", WEXITSTATUS(stat)).unwrap()
             } else if WEXITSTATUS(stat) != 0 {
                 write!(&mut writer, "RE\nWIFEXITED - WEXITSTATUS() = {}\n", WEXITSTATUS(stat)).unwrap();
@@ -119,8 +105,8 @@ fn run_inner(mut judger: impl Judger, mut env: Env) {
         if tle_flag {
             write!(&mut writer, "{}\n", env.runtime_limit + 100).unwrap();
         } else {
-            write!(&mut writer, "{}\n", (usage.ru_utime.tv_sec * 1000000 + usage.ru_utime.tv_usec) / 1000).unwrap();
-            write!(&mut writer, "{}\n", usage.ru_maxrss).unwrap();
+            write!(&mut writer, "{}\n", usage.user_time().num_milliseconds()).unwrap();
+            write!(&mut writer, "{}\n", usage.max_rss()).unwrap();
         }
         judger.do_after_run(&mut env);
     } else {
