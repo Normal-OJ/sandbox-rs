@@ -1,10 +1,12 @@
+mod runner;
+
 use std::fs;
 use std::path::Path;
 
 use clap::Parser;
 
 use libnoj_rs::Env;
-use libnoj_rs::run;
+use runner::run;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about)]
