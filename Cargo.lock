@@ -377,6 +377,9 @@ dependencies = [
 [[package]]
 name = "interpreter_judger"
 version = "0.1.0"
+dependencies = [
+ "libnoj",
+]
 
 [[package]]
 name = "io-lifetimes"
@@ -423,6 +426,13 @@ checksum = "b67380fd3b2fbe7527a606e18729d21c6f3951633d0500574c4dc22d2d638b9f"
 dependencies = [
  "cfg-if",
  "winapi",
+]
+
+[[package]]
+name = "libnoj"
+version = "0.1.0"
+dependencies = [
+ "toml",
 ]
 
 [[package]]
@@ -482,14 +492,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "noj-sandbox"
+name = "noj_sandbox"
 version = "0.1.0"
 dependencies = [
  "clap",
  "fork",
+ "libnoj",
  "nix",
  "tempfile",
- "toml",
  "vplugin",
 ]
 

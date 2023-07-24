@@ -1,27 +1,21 @@
 [package]
-name = "noj-sandbox"
+name = "noj_sandbox"
 version = "0.1.0"
 edition = "2021"
 authors = ["aokblast aokblast@FreeBSD.org"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
-toml = "0.7.3"
 clap = { version = "4.3.12", features = ["derive"] }
 vplugin = "0.3.0"
 fork = "0.1.22"
 tempfile = "3.6.0"
 nix = "0.26.2"
+libnoj = { path = "src/lib/" }
 
-[[bin]]
-name = "noj_sandbox"
-path = "src/main.rs"
-
-[lib]
-name = "libnoj"
-path = "src/lib/lib.rs"
 
 [workspace]
 members = [
-    "src/plugin/interpreter_judger",
+    "src/plugin/*",
+    "src/lib/",
 ]

@@ -1,0 +1,8 @@
+[package]
+name = "libnoj"
+version = "0.1.0"
+edition = "2021"
+authors = ["aokblast aokblast@FreeBSD.org"]
+
+[dependencies]
+toml = "0.7.3"
