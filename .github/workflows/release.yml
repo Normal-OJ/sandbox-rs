@@ -1,8 +1,11 @@
 # .github/workflows/release.yml
+name: Release
 
 on:
   release:
     types: [created]
+  push:
+      branches: [ "master" ]
 
 jobs:
   release:
@@ -20,4 +23,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           RUSTTARGET: ${{ matrix.target }}
-          EXTRA_FILES: "README.md LICENSE"
+          EXTRA_FILES: ""
