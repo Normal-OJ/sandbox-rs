@@ -3,8 +3,8 @@ use std::path::Path;
 
 use clap::Parser;
 
-use noj_sandbox_rs::Env;
-use noj_sandbox_rs::run;
+use libnoj_rs::Env;
+use libnoj_rs::run;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about)]

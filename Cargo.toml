@@ -12,3 +12,11 @@ dlopen = "0.1.8"
 fork = "0.1.22"
 tempfile = "3.6.0"
 nix = "0.26.2"
+
+[[bin]]
+name = "noj_sandbox_rs"
+path = "src/main.rs"
+
+[lib]
+name = "libnoj_rs"
+path = "src/lib/lib.rs"
