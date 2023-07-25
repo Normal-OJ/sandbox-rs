@@ -34,11 +34,11 @@ impl Judger for DefaultJudger {
     }
 }
 
-fn create_instance() -> impl Judger {
-    DefaultJudger {}
+fn create_instance() -> Box<dyn Judger> {
+    Box::new(DefaultJudger {} )
 }
 
-fn run_inner(mut judger: impl Judger, mut env: Env) {
+fn run_inner(mut judger: Box<dyn Judger>, mut env: Env) {
     if judger.is_interactive() {
         //TODO: add interactive
     }
@@ -59,7 +59,6 @@ fn run_inner(mut judger: impl Judger, mut env: Env) {
             let mut tle_flag = tle_flag_atomic_inner.lock().unwrap();
             *tle_flag = true;
         });
-
 
         unsafe {
             if waitpid(pid, &mut stat, 0) == -1 {
