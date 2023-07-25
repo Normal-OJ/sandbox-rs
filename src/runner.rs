@@ -18,6 +18,8 @@ use nix::sys::time::TimeValLike;
 use nix::unistd::{dup2, Pid};
 
 use libnoj::*;
+
+use crate::default_judger::DefaultJudger;
 use crate::plugin_manager::load_plugin;
 
 fn run_inner(mut judger: Box<dyn Judger>, mut env: Env) {
@@ -120,7 +122,18 @@ fn run_inner(mut judger: Box<dyn Judger>, mut env: Env) {
 }
 
 pub fn run(dl_path: String, environment: Env) {
-    let judger = DefaultJudger::create_instance();
+    if !dl_path.is_empty() {
+        load_plugin(&dl_path);
+    }
+
+    let judger;
+
+    if let Some(jud) = find_plugin() {
+        judger = jud;
+    } else {
+        judger = DefaultJudger::create_instance();
+    }
+
     run_inner(judger, environment);
 }
 

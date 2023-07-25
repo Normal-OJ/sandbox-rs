@@ -1,3 +1,7 @@
+extern crate dlopen;
+#[macro_use]
+extern crate dlopen_derive;
+
 use std::fs;
 use std::path::Path;
 
@@ -7,6 +11,8 @@ use libnoj::Env;
 use runner::run;
 
 mod runner;
+mod plugin_manager;
+mod default_judger;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about)]

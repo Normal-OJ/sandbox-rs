@@ -1,6 +1,6 @@
 use libnoj::*;
 
-struct DefaultJudger;
+pub struct DefaultJudger;
 
 impl Judger for DefaultJudger {
     fn do_before_run(&mut self, _e: &mut Env) {}
@@ -16,7 +16,7 @@ impl Judger for DefaultJudger {
 }
 
 impl DefaultJudger {
-    fn create_instance() -> Box<dyn Judger> {
-        Box::new(DefaultJudger {} )
+    pub fn create_instance() -> Box<dyn Judger> {
+        Box::new(DefaultJudger {})
     }
 }
