@@ -17,26 +17,8 @@ use nix::sys::signal::{Signal, SIGTERM, SIGXCPU, SIGXFSZ};
 use nix::sys::time::TimeValLike;
 use nix::unistd::{dup2, Pid};
 
-use libnoj::Context;
-use libnoj::Env;
-use libnoj::Judger;
-use libnoj::Lang;
-
-struct DefaultJudger;
-
-impl Judger for DefaultJudger {
-    fn do_before_run(&mut self, _e: &mut Env) {}
-    fn do_in_run(&mut self, _c: Context) {}
-    fn do_after_run(&mut self, _e: &mut Env) {}
-    fn judge_result(&mut self, _e: &mut Env) {}
-    fn is_interactive(&self) -> bool {
-        return false;
-    }
-}
-
-fn create_instance() -> Box<dyn Judger> {
-    Box::new(DefaultJudger {} )
-}
+use libnoj::*;
+use crate::plugin_manager::load_plugin;
 
 fn run_inner(mut judger: Box<dyn Judger>, mut env: Env) {
     if judger.is_interactive() {
@@ -138,7 +120,7 @@ fn run_inner(mut judger: Box<dyn Judger>, mut env: Env) {
 }
 
 pub fn run(dl_path: String, environment: Env) {
-    let judger = create_instance();
+    let judger = DefaultJudger::create_instance();
     run_inner(judger, environment);
 }
 
