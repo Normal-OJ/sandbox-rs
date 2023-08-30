@@ -22,17 +22,70 @@ impl Env {
         let table = src_str.parse::<Table>()?;
 
         Ok(Self {
-            cwd: table.get("cwd").unwrap_or(&Value::from("./")).as_str().ok_or("cwd should be String type")?.to_string(),
-            large_stack: table.get("large-stack").unwrap_or(&Value::from(false)).as_bool().ok_or("large-stack should be Boolean type")?,
-            max_process: table.get("max-process").unwrap_or(&Value::from(1)).as_integer().ok_or("max-process should be Integer type")? as i32,
-            memory_limit: table.get("memory-limit").unwrap_or(&Value::from(1000000)).as_integer().ok_or("memory-limit should be Integer type")? as u64,
-            output_file: table.get("output").unwrap_or(&Value::from("./out")).as_str().ok_or("output should be String type")?.to_string(),
-            output_size_limit: table.get("output-size-limit").unwrap_or(&Value::from(100000)).as_integer().ok_or("output-size-limit should be Integer type")? as u64,
-            runtime_limit: table.get("runtime-limit").unwrap_or(&Value::from(1000000)).as_integer().ok_or("runtime-limit should be Integer type")? as u64,
-            stderr: table.get("stderr").ok_or("Stderr don't have default value").unwrap().as_str().ok_or("stderr should be String type")?.to_string(),
-            stdin: table.get("stdin").ok_or("Stdin don't have default value").unwrap().as_str().ok_or("stdin should be String type")?.to_string(),
-            stdout: table.get("stdout").ok_or("Stdout don't have default value").unwrap().as_str().ok_or("stdout should be String type")?.to_string(),
-            lang: table.get("lang").unwrap_or(&Value::from(0)).as_integer().ok_or("lang should be Integer type")? as u64,
+            cwd: table
+                .get("cwd")
+                .unwrap_or(&Value::from("./"))
+                .as_str()
+                .ok_or("cwd should be String type")?
+                .to_string(),
+            large_stack: table
+                .get("large-stack")
+                .unwrap_or(&Value::from(false))
+                .as_bool()
+                .ok_or("large-stack should be Boolean type")?,
+            max_process: table
+                .get("max-process")
+                .unwrap_or(&Value::from(1))
+                .as_integer()
+                .ok_or("max-process should be Integer type")? as i32,
+            memory_limit: table
+                .get("memory-limit")
+                .unwrap_or(&Value::from(1000000))
+                .as_integer()
+                .ok_or("memory-limit should be Integer type")? as u64,
+            output_file: table
+                .get("output")
+                .unwrap_or(&Value::from("./out"))
+                .as_str()
+                .ok_or("output should be String type")?
+                .to_string(),
+            output_size_limit: table
+                .get("output-size-limit")
+                .unwrap_or(&Value::from(100000))
+                .as_integer()
+                .ok_or("output-size-limit should be Integer type")?
+                as u64,
+            runtime_limit: table
+                .get("runtime-limit")
+                .unwrap_or(&Value::from(1000000))
+                .as_integer()
+                .ok_or("runtime-limit should be Integer type")? as u64,
+            stderr: table
+                .get("stderr")
+                .ok_or("Stderr don't have default value")
+                .unwrap()
+                .as_str()
+                .ok_or("stderr should be String type")?
+                .to_string(),
+            stdin: table
+                .get("stdin")
+                .ok_or("Stdin don't have default value")
+                .unwrap()
+                .as_str()
+                .ok_or("stdin should be String type")?
+                .to_string(),
+            stdout: table
+                .get("stdout")
+                .ok_or("Stdout don't have default value")
+                .unwrap()
+                .as_str()
+                .ok_or("stdout should be String type")?
+                .to_string(),
+            lang: table
+                .get("lang")
+                .unwrap_or(&Value::from(0))
+                .as_integer()
+                .ok_or("lang should be Integer type")? as u64,
         })
     }
 }

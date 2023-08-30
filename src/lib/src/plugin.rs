@@ -21,4 +21,3 @@ pub fn find_plugin() -> Option<Box<dyn Judger>> {
         None
     }
 }
-

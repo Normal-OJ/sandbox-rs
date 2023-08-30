@@ -10,9 +10,9 @@ use clap::Parser;
 use libnoj::Env;
 use runner::run;
 
-mod runner;
-mod plugin_manager;
 mod default_judger;
+mod plugin_manager;
+mod runner;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about)]

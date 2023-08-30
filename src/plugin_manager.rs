@@ -6,8 +6,7 @@ struct PluginApi {
 }
 
 pub fn load_plugin(path: &str) {
-    let mut cont: Container<PluginApi> =
-        unsafe { Container::load(path) }.unwrap();
+    let mut cont: Container<PluginApi> = unsafe { Container::load(path) }.unwrap();
     unsafe {
         cont.plugin_init();
     }

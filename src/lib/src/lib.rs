@@ -4,11 +4,10 @@ pub use lang::Lang;
 pub use plugin::find_plugin;
 pub use plugin::register_plugin;
 
-mod env;
 mod context;
+mod env;
 mod lang;
 mod plugin;
-
 
 pub trait Judger {
     fn do_before_run(&mut self, e: &mut Env);
@@ -18,5 +17,3 @@ pub trait Judger {
     fn is_interactive(&self) -> bool;
     fn get_plugin_name(&self) -> &'static str;
 }
-
-
