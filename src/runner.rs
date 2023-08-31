@@ -35,6 +35,7 @@ fn run_inner(mut judger: Box<dyn Judger>, mut env: Env) {
         let mut writer = BufWriter::new(
             File::options()
                 .write(true)
+                .create_new(true)
                 .open(Path::new(&env.output_file))
                 .unwrap(),
         );
