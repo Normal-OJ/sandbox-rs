@@ -8,3 +8,7 @@ edition = "2021"
 [dependencies]
 pyo3 = "0.19.1"
 libnoj = { path = "../../lib/" }
+
+[lib]
+name = "python_judger"
+crate-type = ["cdylib"]

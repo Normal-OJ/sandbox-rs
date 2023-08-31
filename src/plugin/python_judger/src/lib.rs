@@ -1,5 +1,7 @@
 use libnoj::Judger;
 use libnoj::{register_plugin, Context, Env};
+use pyo3::types::PyModule;
+use pyo3::Python;
 
 struct PythonJudger;
 
