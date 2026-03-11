@@ -4,14 +4,15 @@ use once_cell::sync::Lazy;
 
 use crate::Judger;
 
-static PLUGIN_LIST: Lazy<Mutex<Option<fn() -> Box<dyn Judger>>>> = Lazy::new(|| Mutex::new(None));
+static PLUGIN_LIST: Lazy<Mutex<Option<fn() -> Box<dyn Judger + Send + Sync>>>> =
+    Lazy::new(|| Mutex::new(None));
 
 #[no_mangle]
-pub fn register_plugin(create_hook: fn() -> Box<dyn Judger>) {
+pub fn register_plugin(create_hook: fn() -> Box<dyn Judger + Send + Sync>) {
     *PLUGIN_LIST.lock().unwrap() = Some(create_hook);
 }
 
-pub fn find_plugin() -> Option<Box<dyn Judger>> {
+pub fn find_plugin() -> Option<Box<dyn Judger + Send + Sync>> {
     let binding = PLUGIN_LIST.lock().unwrap();
     let plugin_hook = *binding;
 

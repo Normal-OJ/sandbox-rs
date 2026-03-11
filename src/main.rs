@@ -31,8 +31,9 @@ fn parse_env_from_file(file_path: &str) -> Env {
     }
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let args = Args::parse();
     let environment = parse_env_from_file(&args.env_path);
-    run(args.dl_path, environment)
+    run(args.dl_path, environment).await
 }

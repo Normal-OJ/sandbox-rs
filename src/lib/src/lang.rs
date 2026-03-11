@@ -56,11 +56,11 @@ impl Lang {
         }
     }
 
-    pub fn get_execute_argv(self) -> Vec<CString> {
+    pub fn get_execute_argv(self) -> Vec<&'static str> {
         match self {
-            Self::C => rust_string_vec_to_c_string_vec(vec!["./main"]),
-            Self::CPP => rust_string_vec_to_c_string_vec(vec!["./main"]),
-            Self::PYTHON => rust_string_vec_to_c_string_vec(vec!["/usr/bin/python3", "main.py"]),
+            Self::C => vec!["./main"],
+            Self::CPP => vec!["./main"],
+            Self::PYTHON => vec!["/usr/bin/python3", "main.py"],
         }
     }
 }

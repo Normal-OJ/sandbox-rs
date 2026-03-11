@@ -20,7 +20,6 @@ pub struct Env {
 impl Env {
     pub fn new(src_str: &str) -> Result<Self, Box<dyn Error>> {
         let table = src_str.parse::<Table>()?;
-
         Ok(Self {
             cwd: table
                 .get("cwd")
@@ -99,7 +98,7 @@ mod tests {
         let config_str = "
             cwd = 'path' # The working directory of spawned process
             large-stack = true # Enable large stack
-            max-process = 11 # Process limit
+            max-process = 1 # Process limit
             memory-limit = 1 # Memory usage limit in bytes
             output = 'path/to/output' # The path to output sandbox result
             output-size-limit = 1 # Output size limit in bytes
